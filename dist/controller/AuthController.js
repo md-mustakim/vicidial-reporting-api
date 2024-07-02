@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const joi_1 = __importDefault(require("joi"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const connector_1 = require("../database/connector");
 const authRouter = express_1.default.Router();
 exports.authRouter = authRouter;
 authRouter.post("/login", (req, res) => {
@@ -18,27 +20,22 @@ authRouter.post("/login", (req, res) => {
         return res.status(400).json({ error: error.details });
     }
     else {
-        // let isValid = bcrypt.compare('CC0001@16899', '$2y$10$31jU8L/CCwlos2F8DJQSW.ieA7Hwfh44k1PTZlGBDjMv4mF2no5TC').then(r => {
-        //     console.log(r);
-        // }).catch(e => {
-        //     console.log(e);
-        // })
-        // init();
-        // execute("SELECT * FROM users WHERE employee_id = ?", [req.body.employee_id]).then(r => {
-        //
-        //     // @ts-ignore
-        //     let isValid = bcrypt.compare(req.body.employee_id, r[0].password).then(r => {
-        //         console.log(r);
-        //     }).catch(e => {
-        //         console.log(e);
-        //     })
-        //
-        //
-        //
-        // }).catch(e => {
-        //     console.log(e)
-        //
-        // })
+        (0, connector_1.init)();
+        (0, connector_1.execute)("SELECT * FROM users WHERE employee_id = ?", [req.body.employee_id]).then(r => {
+            // @ts-ignore
+            console.log(r[0].password);
+            console.log(req.body.password);
+            // @ts-ignore
+            let hash = r[0].password;
+            hash = hash.replace(/^\$2y\$/, '$2a$');
+            let isValid = bcrypt_1.default.compare(req.body.password, hash).then(r => {
+                console.log(r ? "Password Matched" : "Password Not Matched");
+            }).catch(e => {
+                console.log(e + " Password Not Matched");
+            });
+        }).catch(e => {
+            console.log(e);
+        });
         res.send(req.body);
     }
 });

@@ -19,28 +19,29 @@ authRouter.post("/login", (req: Request, res: Response) => {
         return res.status(400).json({ error: error.details });
     }else {
 
-        // let isValid = bcrypt.compare('CC0001@16899', '$2y$10$31jU8L/CCwlos2F8DJQSW.ieA7Hwfh44k1PTZlGBDjMv4mF2no5TC').then(r => {
-        //     console.log(r);
-        // }).catch(e => {
-        //     console.log(e);
-        // })
+        init();
+        execute("SELECT * FROM users WHERE employee_id = ?", [req.body.employee_id]).then(r => {
+            // @ts-ignore
+            console.log(r[0].password);
+            console.log(req.body.password);
 
-        // init();
-        // execute("SELECT * FROM users WHERE employee_id = ?", [req.body.employee_id]).then(r => {
-        //
-        //     // @ts-ignore
-        //     let isValid = bcrypt.compare(req.body.employee_id, r[0].password).then(r => {
-        //         console.log(r);
-        //     }).catch(e => {
-        //         console.log(e);
-        //     })
-        //
-        //
-        //
-        // }).catch(e => {
-        //     console.log(e)
-        //
-        // })
+            // @ts-ignore
+            let hash = r[0].password;
+
+            hash = hash.replace(/^\$2y\$/, '$2a$');
+
+            let isValid = bcrypt.compare(req.body.password, hash).then(r => {
+                console.log(r ? "Password Matched" : "Password Not Matched");
+            }).catch(e => {
+                console.log(e + " Password Not Matched");
+            })
+
+
+
+        }).catch(e => {
+            console.log(e)
+
+        })
 
 
 
